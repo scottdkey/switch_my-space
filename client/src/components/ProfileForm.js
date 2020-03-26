@@ -1,78 +1,62 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import axios from "axios";
 import { Form } from "semantic-ui-react";
-import { AuthConsumer } from "../providers/AuthProvider";
+import { AuthConsumer, AuthContext } from "../providers/AuthProvider";
 import { Redirect } from "react-router-dom";
-class ProfileForm extends React.Component {
-  state = {
-    name: this.props.auth.user.name,
-    nickname: this.props.auth.user.nickname,
-    email: this.props.auth.user.email,
-    image: this.props.auth.user.image,
-    redirect: null
+
+const ProfileForm = (props)=> {
+  const auth = useContext(AuthContext)
+  const {id, name, nickname, email, image} = auth.user
+  const [profile, setProfile] = useState(auth.user)
+
+  const handleChange = (e) => {
+    setProfile(e.target.value)
   };
 
-  handleChange = e => {
-    const {
-      target: { name, value }
-    } = e;
-    this.setState({
-      [name]: value
-    });
-  };
-
-  handleSubmit = e => {
-    console.log(this.props);
-    const userID = this.props.auth.user.id;
-    const user = { ...this.state };
-    console.log(user);
+  const handleSubmit = (e) => {
+    console.log(profile)
+    console.log(props)
     axios
-      .put(`/api/users/${userID}`, user)
+      .patch(`/api/users/${auth.user.id}`, profile)
       .then(res => {
-        this.setState({ redirect: "/profile" });
+        console.log(res)
       })
       .catch(err => {
         console.log(err.response);
       });
   };
 
-  render() {
-    const { name, nickname, image, email } = this.state;
-
-    if (this.state.redirect) {
-      return <Redirect to={this.state.redirect} />;
-    }
     return (
       <div>
-        <Form onSubmit={this.handleSubmit}>
+        <Form onSubmit={handleSubmit}>
           <Form.Group width="equal">
             <Form.Input
               label="Name"
               placeholder="Fill in Name"
               name="name"
               value={name}
-              onChange={this.handleChange}
+              onChange={handleChange}
             />
             <Form.Input
               label="Nickname"
               placeholder="Fill in Nickname"
               name="nickname"
               value={nickname}
-              onChange={this.handleChange}
+              onChange={handleChange}
             />
             <Form.Input
               label="Image Url"
               placeholder="Fill in Url"
               name="image"
               value={image}
-              onChange={this.handleChange}
+              onChange={handleChange}
             />
             <Form.Input
               label="Email"
               placeholder="Email"
               name="email"
               value={email}
-              onChange={this.handleChange}
+              onChange={handleChange}
             />
           </Form.Group>
 
@@ -81,14 +65,5 @@ class ProfileForm extends React.Component {
       </div>
     );
   }
-}
 
-export default class ConnectedProfileForm extends React.Component {
-  render() {
-    return (
-      <AuthConsumer>
-        {auth => <ProfileForm {...this.props} auth={auth} />}
-      </AuthConsumer>
-    );
-  }
-}
+export default ProfileForm
